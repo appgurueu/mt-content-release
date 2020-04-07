@@ -1,17 +1,33 @@
 const cheerio = require('cheerio');
 const axios = require('axios').default;
+const querystring = require('querystring');
+const axiosCookieJarSupport = require('axios-cookiejar-support').default;
+const tough = require('tough-cookie');
+
+axiosCookieJarSupport(axios);
+
+axios.defaults.withCredentials = true;
 
 const cdb = "https://content.minetest.net/"
-async function performApiRequest(url, callback) {
-    return axios.get(cdb+"api/"+url, {json: true}).then(response => callback(response.data)).catch(console.error);
+async function performApiRequest(url, callback, config) {
+    if (!callback) {
+        return (await axios.get(cdb+"api/"+url, {json: true, jar: config.jar})).data;
+    }
+    axios.get(cdb+"api/"+url, {json: true}).then(response => callback(response.data)).catch(console.error);
 }
 
-async function performPostRequest(url, data, callback) {
-    return axios.post(cdb+url, data).then(callback || console.log).catch(console.error);
+async function performPostRequest(url, data, callback, config) {
+    return axios.post(cdb+url, querystring.stringify(data), config).then(function (response) {
+        if (callback) {
+            callback(response);
+        } else {
+            console.log(url+": "+response.status);
+        }
+    }).catch(console.error);
 }
 
 const release_defaults = {
-    uploadOpt:"vcs",
+    uploadOpt: "vcs",
     vcsLabel: "master",
     title: "rolling",
     min_rel: 1,
@@ -25,10 +41,24 @@ const form_serialization = {
 }
 
 function session(username) {
-    function login(password) {
-        axios.get(base_url + "user/sign-in/").then(function(response) {
+    const cookieJar = new tough.CookieJar();
+    async function login(password) {
+        axios.get(cdb + "user/sign-in", {jar: cookieJar}).then(function(response) {
             $ = cheerio.load(response.data);
-            performPostRequest("user/sign-in/", {username, password, csrf_token: $("input#csrf_token").first().attr("value")});
+            let data = {username, password};
+            $("input").each((_, e) => {
+                e = $(e);
+                if (e.attr("name") && e.attr("value")) {
+                    data[e.attr("name")] = e.attr("value");
+                }
+            })
+            return axios({
+                method: "post",
+                jar: cookieJar,
+                url: cdb + "user/sign-in",
+                data: querystring.stringify(data),
+                headers: {Referer: "https://content.minetest.net/user/sign-in"}
+            });
         }).catch(console.error);
     }
 
@@ -65,29 +95,38 @@ function session(username) {
             });
         }
 
-        function getInfo(callback) {
-            return (await performApiRequest(base_url, callback)).data;
+        async function getInfo(callback) {
+            if (callback) {
+                return performApiRequest(base_url, callback, cookieJar);
+            }
+            return (await performApiRequest(base_url, undefined, cookieJar));
         }
 
-        function replaceInfo(info) {
-            return performPostRequest(base_url + "edit/", info);
+        function replaceInfo(info, callback) {
+            return performPostRequest(base_url + "edit/", info, callback, {jar: cookieJar});
         }
 
-        function editInfo(new_info) {
-            axios.get(cdb + base_url + "edit/").then(function(response) {
+        async function editInfo(new_info) {
+            axios.get(cdb + base_url + "edit/", {jar: cookieJar}).then(function(response) {
                 let $ = cheerio.load(response.data);
                 let info = {};
                 info.csrf_token = $("input#csrf_token").first().attr("value");
                 for (const elem in form_serialization) {
                     $(elem).each((_, e) => {
-                        info[e.attr("name")] = form_serialization[elem](e);
+                        e = $(e);
+                        if (e.attr("name")) {
+                            let value = form_serialization[elem]($(e));
+                            if (value) {
+                                info[e.attr("name")] = value;
+                            }
+                        }
                     });
                 }
+                delete info.q;
                 for (let key in new_info) {
                     info[key] = new_info[key];
                 }
-                delete info.q;
-                replaceInfo(info);
+                return replaceInfo(info);
             });
         }
 

@@ -1,11 +1,6 @@
-require("geckodriver");
+const {sleep} = require("./common.js");
 
-function msleep(n) {
-    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, n);
-}
-function sleep(n) {
-    msleep(n*1000);
-}
+require("geckodriver");
 
 const firefox = require('selenium-webdriver/firefox');
 const webdriver = require('selenium-webdriver');

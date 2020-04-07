@@ -1,13 +1,16 @@
 {
     "name": "mt-content-release",
     "description": "Tools for automatizing releases of Minetest content",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "main": "index.js",
     "dependencies": {
         "mark-twain": "^2.0.3",
         "parse5": "^5.1.1",
         "cheerio": "^1.0.0-rc3",
         "axios": "^0.19.2",
+        "qs": "^6.9.3",
+        "axios-cookiejar-support": "^0.5.1",
+        "tough-cookie": "^4.0.0",
         "geckodriver": "^1.19.1",
         "selenium-webdriver": "^4.0.0"
     },

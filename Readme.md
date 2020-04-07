@@ -39,11 +39,12 @@ const content = {
 
 ```javascript
 const mtcr = require("mt-content-release");
-const release = mtcr.util.release(content);
-// Create next rolling releases for cellestial_game and modlib
-release.createCDBReleases();
-// Edit ContentDB page title, short description & description
-release.editCDBPages();
-// Edit Minetest Forum posts (requires "forums = thread_id" in mod/game.conf or forums link on CDB)
-release.editForumPosts();
+mtcr.util.release(content).then(release => {
+    // Create next rolling releases for cellestial_game and modlib, untested
+    release.createCDBReleases();
+    // Edit ContentDB page title, short description & description, tested
+    release.editCDBPages();
+    // Edit Minetest Forum posts (requires "forums = thread_id" in mod/game.conf or forums link on CDB), partially tested
+    release.editForumPosts();
+});
 ```

@@ -3,31 +3,25 @@ const cdb = require("./cdb.js");
 const mtForum = require("./mt_forum.js");
 const bbc = require("./bbc.js");
 const mtConf = require("./mt_conf.js");
+const { sleep } = require("./common.js");
 
-function release(content) {
-    function processReference(ref) {
-        if (ref.startsWith("http")) {
-            return ref;
-        }
-        return "https://raw.githubusercontent.com/"+content.github.username+"/"+mod+"/master/"+ref;
-    }
-    const toBBC = bbc(processReference);
+async function release(content) {
     content.packages = content.packages || [];
     for (const type of ["mod", "game", "texture"]) {
-        let pkgs = (content[type+"s"] || []).map(content => {
-            if (typeof(content) === "string") {
-                return {type: type, name: content};
+        let pkgs = (content[type+"s"] || []).map(pkg => {
+            if (typeof(pkg) === "string") {
+                return {type: type, name: pkg};
             }
-            content.type = type;
-            return content;
+            pkg.type = type;
+            return pkg;
         });
-        content.packages = [content.packages, ...pkgs];
+        content.packages = [...content.packages, ...pkgs];
     }
 
     const session = cdb(content.cdb.username);
 
     for (const pkg of content.packages) {
-        const base_path = content.minetest_home+pkg.type+"s/"+pkg.name+"/";
+        const base_path = content.minetestHome + pkg.type + "s/" + pkg.name + "/";
         const readme = fs.readFileSync(base_path + "Readme.md").toString("utf-8");
         let conf = fs.readFileSync(base_path + pkg.type + ".conf");
         conf = conf ? mtConf(conf.toString("utf-8")) : {};
@@ -50,16 +44,25 @@ function release(content) {
         }
     }
 
-    function editCDBPages() {
-        for (const pkg of content.packages) {
-            const conf = pkg.conf;
-            session.editInfo({title: conf.title, short_description: conf.description, description: conf.readme});
-        }
+    async function editCDBPages() {
+        session.login(content.cdb.password).then(async function() {
+            for (const pkg of content.packages) {
+                const conf = pkg.conf;
+                await session.package(pkg.name).editInfo({title: conf.title, short_desc: conf.description, desc: conf.readme});
+                await sleep(1);
+            }
+        });
     }
 
-    function obtainForumEditActions(content) {
+    function obtainForumEditActions() {
         let actions = [];
         for (const pkg of content.packages) {
+            const toBBC = bbc((ref) => {
+                if (ref.startsWith("http")) {
+                    return ref;
+                }
+                return "https://raw.githubusercontent.com/"+content.github.username+"/"+pkg.name+"/master/"+ref;
+            });
             const prefix = "[" + pkg.type.sub(0, 1).toUpperCase() + pkg.type.sub(1) + "] ";
             const suffix = " [" + pkg.name + "]";
             let subject = prefix + pkg.conf.title + " - " + pkg.conf.description + suffix;
@@ -68,7 +71,7 @@ function release(content) {
             }
             const action = {
                 "type": "edit",
-                "id": info.forums,
+                "id": pkg.conf.forums,
                 "subject": subject,
                 // TODO find better method than removing all non-latin characters
                 "message": toBBC(pkg.conf.readme.replace(/[^\x00-\xFF]/g, ""))
