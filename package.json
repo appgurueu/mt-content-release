@@ -1,0 +1,25 @@
+{
+    "name": "mt-content-release",
+    "description": "Tools for automatizing releases of Minetest content",
+    "version": "1.0.0",
+    "main": "index.js",
+    "dependencies": {
+        "mark-twain": "^2.0.3",
+        "parse5": "^5.1.1",
+        "cheerio": "^1.0.0-rc3",
+        "axios": "^0.19.2",
+        "geckodriver": "^1.19.1",
+        "selenium-webdriver": "^4.0.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/appgurueu/mt-content-release.git"
+    },
+    "keywords": ["minetest", "content", "release", "automatization", "markdown", "bbcode", "forum", "cdb", "contentdb"],
+    "author": "Lars Mueller <appgurulars@gmx.de> (https://appgurueu.github.io)",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/appgurueu/mt-content-release/issues"
+    },
+    "homepage": "https://github.com/appgurueu/mt-content-release"
+}
