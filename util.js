@@ -54,7 +54,7 @@ async function release(content) {
         });
     }
 
-    function obtainForumEditActions() {
+    async function obtainForumEditActions() {
         let actions = [];
         for (const pkg of content.packages) {
             const toBBC = bbc((ref) => {
@@ -63,7 +63,7 @@ async function release(content) {
                 }
                 return "https://raw.githubusercontent.com/"+content.github.username+"/"+pkg.name+"/master/"+ref;
             });
-            const prefix = "[" + pkg.type.sub(0, 1).toUpperCase() + pkg.type.sub(1) + "] ";
+            const prefix = "[" + pkg.type.substring(0, 1).toUpperCase() + pkg.type.substring(1) + "] ";
             const suffix = " [" + pkg.name + "]";
             let subject = prefix + pkg.conf.title + " - " + pkg.conf.description + suffix;
             if (subject.length > 60) {
@@ -81,7 +81,7 @@ async function release(content) {
         return actions;
     }
 
-    function editForumPosts(content) {
+    function editForumPosts() {
         obtainForumEditActions(content).then(actions => mtForum(content.forum.username, content.forum.password, actions));
     }
 

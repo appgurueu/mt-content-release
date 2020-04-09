@@ -1,4 +1,4 @@
-const {sleep} = require("./common.js");
+const { msleep } = require("./common.js");
 
 require("geckodriver");
 
@@ -22,19 +22,19 @@ async function performActions(username, password, actions) {
         for (const action of actions) {
             if (action.type === "edit") {
                 await driver.get("https://forum.minetest.net/viewtopic.php?t="+action.id);
-                await driver.get((await driver.findElement(By.css('li.edit-icon > a'))).getAttribute("href"));
+                (await driver.findElement(By.css('li.edit-icon > a'))).click();
                 await driver.wait(until.elementLocated(By.name('subject')), timeout, error, 1000);
                 await driver.wait(until.elementLocated(By.name('message')), timeout, error, 1000);
                 await driver.wait(until.elementLocated(By.name('post')), timeout, error, 1000);
-                sleep(1);
+                msleep(2000);
                 await driver.executeScript(
                     "document.getElementsByName('subject')[0].setAttribute('value', "+JSON.stringify(action.subject)+");" + 
                     "document.getElementsByName('message')[0].textContent = "+JSON.stringify(action.message)+";"
                 );
-                sleep(1);
+                msleep(2000);
                 (await driver.findElement(By.name("post"))).click();
-                sleep(1);
-                await driver.wait(until.titleIs('Information - Minetest Forums'), 1000);
+                msleep(2000);
+                await driver.wait(until.titleIs('Information - Minetest Forums'), timeout, error, 1000);
             } else {
                 throw Error("Action "+action.type+" not supported yet");
             }

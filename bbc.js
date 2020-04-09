@@ -19,7 +19,11 @@ tags = {
     "li": "*"
 };
 
-const newline_required = {
+const preceding_newlines_required = {
+    "h1": 1, "h2": 1, "h3": 1, "h4": 1, "h5": 1, "h6": 1
+}
+
+const trailing_newlines_required = {
     "p": 1, "h1": 1, "h2": 2, "h3": 2, "h4": 2, "h5": 2, "h6": 2, "img": 1, "ul": 1, "ol": 1, "li": 1, "codeblock": 1
 };
 
@@ -105,15 +109,9 @@ function BBCGenerator(process_ref) {
                 final = start + final + end;
             }
         }
-        let newline_req = newline_required[parsed[0]];
-        if (newline_req < 0) {
-            newline_req = -newline_req;
-            final = "\n".repeat(newline_req) + final;
-        }
-        if (newline_req) {
-            final += "\n".repeat(newline_req);
-        }
-        return final;
+        const preceding_newlines = preceding_newlines_required[parsed[0]];
+        const trailing_newlines = trailing_newlines_required[parsed[0]];
+        return "\n".repeat(preceding_newlines || 0) + final + "\n".repeat(trailing_newlines || 0);
     }
     return function(src) {
         return toBBC(md(src).content);

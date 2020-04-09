@@ -44,7 +44,7 @@ mtcr.util.release(content).then(release => {
     release.createCDBReleases();
     // Edit ContentDB page title, short description & description, tested
     release.editCDBPages();
-    // Edit Minetest Forum posts (requires "forums = thread_id" in mod/game.conf or forums link on CDB), partially tested
+    // Edit Minetest Forum posts (requires "forums = thread_id" in mod/game.conf or forums link on CDB), tested
     release.editForumPosts();
 });
 ```
