@@ -6,6 +6,12 @@ A collection of various utility scripts useful for automatizing Minetest Content
 
 Written by Lars Mueller aka LMD or appguru(eu). Licensed under the MIT license.
 
+### Links
+
+* [GitHub](https://github.com/appgurueu/mt-content-release)
+* [Minetest Forum](https://forum.minetest.net/viewtopic.php?f=14&t=24869)
+* [Discord](https://discord.com/invite/ysP74by)
+
 ## API
 
 This reflects part of the API. Read the self-documenting code for more.
