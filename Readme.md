@@ -14,6 +14,7 @@ This reflects part of the API. Read the self-documenting code for more.
 
 ```javascript
 const content = {
+    // Minetest home folder of Ubuntu PPA installs
     minetestHome: "/home/user/.minetest/",
     forum: {
         username: "...",
@@ -21,7 +22,8 @@ const content = {
     },
     cdb: {
         username: "...",
-        password: "..."
+        password: "...",
+        token: "..."
     },
     github: {
         username: "..."
@@ -39,7 +41,38 @@ const content = {
 
 ```javascript
 const mtcr = require("mt-content-release");
+const { exec } = require("child_process");
+function execute(command, callback) {
+    console.log("Executing " + command);
+    exec(command, (error, stdout, stderr) => {
+        if (error) {
+            throw error.message;
+        }
+        callback(stdout);
+    });
+}
 mtcr.util.release(content).then(release => {
+    // Example code
+    for (const pkg of release.content.packages) {
+        execute('cd "'+pkg.path+'" && git log --pretty=format:"%H" -n 1', hash => {
+            const pkg_session = release.session.package(pkg.name);
+            pkg_session.getReleases(function(releases) {
+                if (releases[0].commit != hash) {
+                    console.log("Package "+pkg.name+" has unreleased changes - " + hash + " vs " + releases[0].commit);
+                    execute('cd "' + pkg.path + '" && git push -u origin master', done => {
+                        pkg_session.getNextRelease(release => {
+                            pkg_session.createRelease({title: release.title});
+                        });
+                    });
+                }
+            })
+            execute('cd "' + pkg.path + '" && git status --porcelain', status => {
+                if (status) {
+                    console.log("Package " + pkg.name + " has uncommitted changes");
+                }
+            })
+        });
+    }
     // Create next rolling releases for cellestial_game and modlib, untested
     release.createCDBReleases();
     // Edit ContentDB page title, short description & description, tested
@@ -48,3 +81,7 @@ mtcr.util.release(content).then(release => {
     release.editForumPosts();
 });
 ```
+
+#### Testhouse
+
+Audit tool for Minetest content. Still experimental.

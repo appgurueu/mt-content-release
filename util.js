@@ -18,7 +18,7 @@ async function release(content) {
         content.packages = [...content.packages, ...pkgs];
     }
 
-    const session = cdb(content.cdb.username);
+    const session = cdb(content.cdb.username, content.cdb.token);
 
     for (const pkg of content.packages) {
         const base_path = content.minetestHome + pkg.type + "s/" + pkg.name + "/";
@@ -33,6 +33,7 @@ async function release(content) {
         }
         conf.readme = readme;
         pkg.conf = conf;
+        pkg.path = base_path;
     }
 
     function createCDBReleases() {
@@ -40,7 +41,7 @@ async function release(content) {
             if (pkg.release === false) {
                 continue;
             }
-            session.getNextRelease(release => session.createRelease(release));
+            session.package(pkg.name).getNextRelease(release => session.package(pkg.name).createRelease(release));
         }
     }
 
@@ -85,7 +86,7 @@ async function release(content) {
         obtainForumEditActions(content).then(actions => mtForum(content.forum.username, content.forum.password, actions));
     }
 
-    return {createCDBReleases, editCDBPages, editForumPosts};
+    return {createCDBReleases, editCDBPages, editForumPosts, content, session};
 }
 
 module.exports = release;

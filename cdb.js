@@ -40,7 +40,7 @@ const form_serialization = {
     select: e => e.find("option[selected]").first().attr("value")
 }
 
-function session(username) {
+function session(username, token) {
     const cookieJar = new tough.CookieJar();
     async function login(password) {
         axios.get(cdb + "user/sign-in", {jar: cookieJar}).then(function(response) {
@@ -77,22 +77,22 @@ function session(username) {
                 callback(last);
             });
         }
-
         function createRelease(release, callback) {
-            const url = base_url + "releases/new/";
-            let data = release;
-            axios.get(cdb + url).then(function(response) {
-                let $ = cheerio.load(response.data);
-                data.csrf_token = $("input#csrf_token").first().attr("value");
-                for (let release_default in release_defaults) {
-                    if (!data[release_default]) {
-                        data[release_default] = release_defaults[release_default];
-                    }
+            const url = cdb + "api/" + base_url + "releases/new/";
+            axios({
+                method: "post",
+                url: url,
+                headers: {
+                    Authorization: "Bearer " + token
+                },
+                data: {
+                    title: release.title,
+                    ref: release.ref || "master",
+                    method: "git",
+                    min_protocol: release.min_protocol,
+                    max_protocol: release.max_protocol
                 }
-                performPostRequest(url, data, callback);
-            }).catch(function(exception) {
-                console.error(exception);
-            });
+            }).then(callback || (response => console.log(url+": "+response.status+"; "+response.data))).catch(reason => console.debug(reason));
         }
 
         async function getInfo(callback) {

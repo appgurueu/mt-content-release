@@ -84,8 +84,11 @@ function BBCGenerator(process_ref) {
                     }
                 }
             } else {
+                // HACK to prevent htmlparse from stripping spaces
+                let start_spaces = child.match(/^\s*/)[0];
+                let end_spaces = child.match(/\s*$/)[0];
                 // second pass needs to ignore HTML
-                out += ignore_html ? child : toBBC(htmlparse(child), true);
+                out += ignore_html ? child : start_spaces + toBBC(htmlparse(child), true) + end_spaces;
             }
         }
         let final = out;
@@ -98,7 +101,15 @@ function BBCGenerator(process_ref) {
                     bb_tagname = "code";
                     html_tag = "codeblock";
                 }
-                final = "[" + bb_tagname + "]" + final + "[/" + closing(bb_tagname) + "]";
+                let opening_tag = "[" + bb_tagname + "]";
+                let closing_tag = "[/" + closing(bb_tagname) + "]";
+                if (bb_tagname.startsWith("url") && final.startsWith("[icode]") && final.endsWith("[/icode]")) {
+                    // HACK because [icode][url] renders better than [url][icode]
+                    const stripped_final = final.substring("[icode]".length,final.length-("[/icode]".length))
+                    final = "[icode]" + opening_tag + stripped_final + closing_tag + "[/icode]";
+                } else {
+                    final = opening_tag + final + closing_tag;
+                }
             } else {
                 let start = "";
                 let end = ""

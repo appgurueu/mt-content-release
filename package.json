@@ -12,7 +12,8 @@
         "axios-cookiejar-support": "^0.5.1",
         "tough-cookie": "^4.0.0",
         "geckodriver": "^1.19.1",
-        "selenium-webdriver": "^4.0.0"
+        "selenium-webdriver": "^4.0.0",
+        "jimp": "^0.10.3"
     },
     "repository": {
         "type": "git",
