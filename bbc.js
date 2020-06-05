@@ -16,7 +16,8 @@ tags = {
     "a": "url",
     "ul": "list",
     "ol": "list=1",
-    "li": "*"
+    "li": "*",
+    "blockquote": "quote"
 };
 
 const preceding_newlines_required = {
@@ -69,6 +70,8 @@ function htmlparse(text) {
 function BBCGenerator(process_ref) {
     function toBBC(parsed, ignore_html) {
         let html_tag = parsed[0];
+        if (html_tag == "br")
+            return "\n";
         let bb_tagname = tags[html_tag];
         let out = "";
         for (let ci = 1; ci < parsed.length; ci++) {

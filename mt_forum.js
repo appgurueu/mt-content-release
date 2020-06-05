@@ -8,7 +8,7 @@ const {Builder, By, until} = webdriver;
  
 async function performActions(username, password, actions) {
     let driver = await new Builder().forBrowser('firefox').withCapabilities(webdriver.Capabilities.firefox())
-        .setFirefoxOptions(new firefox.Options()/*.headless()*/.windowSize({width: 640, height: 480})).build();
+        .setFirefoxOptions(new firefox.Options().headless().windowSize({width: 640, height: 480})).build();
     try {
         const timeout = 10000;
         const error = "Failed to locate element";
