@@ -3,6 +3,9 @@
     "description": "Tools for automatizing releases of Minetest content",
     "version": "1.0.1",
     "main": "index.js",
+    "scripts": {
+        "release": "node release.js"
+    },
     "dependencies": {
         "mark-twain": "^2.0.3",
         "parse5": "^5.1.1",
