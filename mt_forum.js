@@ -31,10 +31,11 @@ async function performActions(username, password, actions) {
                     "document.getElementsByName('subject')[0].setAttribute('value', "+JSON.stringify(action.subject)+");" + 
                     "document.getElementsByName('message')[0].textContent = "+JSON.stringify(action.message)+";"
                 );
-                driver.wait(sleep(1));
+                driver.wait(sleep(2));
                 (await driver.findElement(By.name("post"))).click();
                 driver.wait(sleep(1));
                 await driver.wait(until.titleIs(action.subject + " - Minetest Forums"), timeout, error, 1000);
+                console.log("Edited " + action.id + ", new subject: " + action.subject)
             } else {
                 throw Error("Action "+action.type+" not supported yet");
             }
