@@ -1,14 +1,11 @@
 const { sleep } = require("./common.js");
-
-require("geckodriver");
-
-const firefox = require('selenium-webdriver/firefox');
 const webdriver = require('selenium-webdriver');
 const {Builder, By, until} = webdriver;
 
 async function performActions(username, password, actions) {
-    let driver = await new Builder().forBrowser('firefox').withCapabilities(webdriver.Capabilities.firefox())
-        .setFirefoxOptions(new firefox.Options().headless().windowSize({width: 640, height: 480})).build();
+    let caps = webdriver.Capabilities.chrome();
+    caps.set("chromeOptions", {args: ["--headless"]});
+    let driver = await new Builder().forBrowser("chrome").withCapabilities(caps).build();
     try {
         const timeout = 20000;
         const error = "Failed to locate element";
@@ -33,7 +30,9 @@ async function performActions(username, password, actions) {
                 );
                 driver.wait(sleep(2));
                 (await driver.findElement(By.name("post"))).click();
+                // HACK as the above sometimes fails for no reason
                 driver.wait(sleep(1));
+                (await driver.findElement(By.name("post"))).click();
                 await driver.wait(until.titleIs(action.subject + " - Minetest Forums"), timeout, error, 1000);
                 console.log("Edited " + action.id + ", new subject: " + action.subject)
             } else {
